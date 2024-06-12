@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Accessibility Checker</title>
+  <!-- Include the latest version of axe-core from the CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.9.1/axe.js"></script>
+</head>
+<body>
+  <h1>Upload HTML File to Check Accessibility</h1>
+  <input type="file" id="fileInput">
+  <pre id="results"></pre>
+
+  <script>
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const htmlContent = e.target.result;
+          const div = document.createElement('div');
+          div.innerHTML = htmlContent;
+          document.body.appendChild(div);
+
+          axe.run(div, {
+            runOnly: {
+              type: 'tag',
+              values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+            }
+          }).then(results => {
+            document.getElementById('results').textContent = JSON.stringify(results.violations, null, 2);
+            document.body.removeChild(div);
+          }).catch(err => {
+            console.error('Error running axe-core:', err);
+          });
+        };
+        reader.readAsText(file);
+      }
+    });
+  </script>
+</body>
+</html>
